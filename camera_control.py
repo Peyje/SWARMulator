@@ -1,6 +1,16 @@
 # Load further needed Panda3D modules, classes and containers
+from direct.gui.DirectGui import DirectFrame
+from direct.gui.DirectButton import DirectButton
 from direct.showbase import DirectObject
 from panda3d.core import Vec3
+
+
+def reset_camera(base):
+	"""
+	Set camera to default position.
+	"""
+	base.camera.setPos(-4, 0, 2)
+	base.camera.lookAt(0, 0, 1)
 
 
 class CameraControl(DirectObject.DirectObject):
@@ -52,6 +62,11 @@ class CameraControl(DirectObject.DirectObject):
 
 		# Start task to move camera in desired direction
 		base.taskMgr.add(self.cam_move_task, "CamMoveTask", extraArgs=[base], appendTask=True)
+
+		# Create button to reset camera position and orientation
+		frame = DirectFrame(frameColor=(.1, .1, .1, .7), frameSize=(-.22, .22, -.05, .08), pos=(-1.1, 0, -0.94))
+		button = DirectButton(text="Reset Camera", frameSize=(-4, 4, -.5, 1), scale=.05, command=reset_camera, extraArgs=[base])
+		button.reparentTo(frame)
 
 	def update_forward_trig(self, trig):
 		"""
