@@ -10,7 +10,6 @@ from panda3d.core import AntialiasAttrib
 from panda3d.core import DirectionalLight
 
 # Load classes from other files
-from camera_controller import CameraController
 from gui import Gui
 from camera_control import CameraControl
 
