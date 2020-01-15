@@ -12,6 +12,7 @@ from panda3d.core import DirectionalLight
 # Load classes from other files
 from camera_controller import CameraController
 from gui import Gui
+from camera_control import CameraControl
 
 
 class Simulator(ShowBase):
@@ -35,24 +36,21 @@ class Simulator(ShowBase):
         wp.setSize(1024, 768)
         self.win.requestProperties(wp)
 
-        # self.setFrameRateMeter(True)
-
         # Activate antialiasing (MAuto for automatic selection of AA form)
         self.render.setAntialias(AntialiasAttrib.MAuto)
 
-        # TODO: Remake the camera controller
-        CameraController(self)
+        # Deactivate default mouse control of the camera as they are not very helpful
+        self.disableMouse()
+
+        # Set camera to default position and orientation
+        self.camera.setPos(-4, 0, 2)
+        self.camera.lookAt(0, 0, 1)
+        self.camLens.setFov(90)
+
+        # Load the camera control events to control camera by keyboard
+        CameraControl(self)
 
         # Load scene
-        self.init_scene()
-
-        # Load GUI
-        Gui(self)
-
-    def init_scene(self):
-        """
-        Load room model and set up some lights (how romantic..).
-        """
         # TODO: Design a new room
         self.scene = self.loader.loadModel("models/rooms/room_florian.egg")
         self.scene.reparentTo(self.render)  # Panda3D makes use of a scene graph, where "render" is the parent of the
@@ -66,7 +64,8 @@ class Simulator(ShowBase):
             dlnp.setHpr((120 * i) + 1, -30, 0)
             self.render.setLight(dlnp)
 
-        # TODO: Rest of the simulator
+        # Load GUI
+        Gui(self)
 
 
 if __name__ == "__main__":
