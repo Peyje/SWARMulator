@@ -8,10 +8,10 @@ from direct.showbase.ShowBase import ShowBase
 from panda3d.core import WindowProperties
 from panda3d.core import AntialiasAttrib
 from panda3d.core import DirectionalLight
-from panda3d.core import Vec4
 
 # Load classes from other files
 from camera_controller import CameraController
+from gui import Gui
 
 
 class Simulator(ShowBase):
@@ -25,6 +25,10 @@ class Simulator(ShowBase):
         """
         # Initialise window
         ShowBase.__init__(self)
+        self.setBackgroundColor(.1, .1, .1)
+
+        # Resize region where sim is displayed
+        self.cam.node().getDisplayRegion(0).setDimensions(0, 0.8, 0, 1)
 
         # Setup window
         wp = WindowProperties()
@@ -41,6 +45,9 @@ class Simulator(ShowBase):
 
         # Load scene
         self.init_scene()
+
+        # Load GUI
+        Gui(self)
 
     def init_scene(self):
         """
@@ -60,6 +67,7 @@ class Simulator(ShowBase):
             self.render.setLight(dlnp)
 
         # TODO: Rest of the simulator
+
 
 if __name__ == "__main__":
     # Start the simulation
