@@ -1,4 +1,4 @@
-# Load further needed Panda3D modules, classes and containers
+# Load further needed Panda3D modules
 from direct.gui.DirectGui import DirectFrame
 from direct.gui.DirectButton import DirectButton
 from direct.showbase import DirectObject
@@ -16,6 +16,7 @@ def reset_camera(base):
 class CameraControl(DirectObject.DirectObject):
 	"""
 	This class takes care of the commands to the camera, e.g. event handling, setting up the update task and more.
+	The accept-calls are only working if panda has its own top level window and key presses are propagated to it.
 	"""
 
 	def __init__(self, base):
