@@ -12,6 +12,7 @@ from panda3d.bullet import BulletWorld, BulletPlaneShape, BulletRigidBodyNode, B
 
 # Load classes from other files
 from camera_control import CameraControl
+from drone_manager import DroneManager
 
 # Import needed modules
 import sys
@@ -34,21 +35,60 @@ class Handler:
     # Stored to later control the visibility switching of the bullet debug mode
     bullet_debug_node = []
 
+    # Stored to later control the drones through GUI interaction
+    drone_manager = []
+
     def __init__(self):
-        self.test_1_button = builder.get_object("test1Button")
-        self.test_2_button = builder.get_object("test2Button")
+        # Get GUI objects to manipulate
+        self.amount_drones_spinner = builder.get_object("amountDronesSpinner")
+        self.amount_drones_adjustment = builder.get_object("amountDronesAdj")
+        self.takeoff_toggle = builder.get_object("toggleFlightButton")
+        self.stop_movement_button = builder.get_object("stopMovementButton")
+        self.stop_rotors_button = builder.get_object("stopRotorsButton")
+        self.go_home_button = builder.get_object("goHomeButton")
+        self.random_button = builder.get_object("randomButton")
 
-    def onTest1Press(self, button):
-        """
-        Print that button has been pressed.
-        """
-        print("Test Button 1 pressed")
+        # Store different states of GUI objects
+        self.takeoff_toggle_state = self.takeoff_toggle.get_active()  # True == pressed
+        self.amount_drones_value = self.amount_drones_adjustment.get_value()
 
-    def onTest2Press(self, button):
+    def onAmountDronesChange(self, adjustment):
         """
-        Print that button has been pressed.
+        Change state of corresponding variable and call function to handle this.
         """
-        print("Test Button 2 pressed")
+        self.amount_drones_value = self.amount_drones_adjustment.get_value()
+        Handler.drone_manager.update_drone_amount(self.amount_drones_value)
+
+    def onTakeoffToggle(self, button):
+        """
+        Change state of corresponding variable and call function to handle this.
+        """
+        self.takeoff_toggle_state = self.takeoff_toggle.get_active()
+        # TODO: Handle Button
+
+        # Change GUI corresponding to current state of flight of drones
+        if self.takeoff_toggle_state:
+            self.takeoff_toggle.set_label("Land")
+            self.amount_drones_spinner.set_sensitive(False)
+        else:
+            self.takeoff_toggle.set_label("Takeoff")
+            self.amount_drones_spinner.set_sensitive(True)
+
+    def onStopMovementPress(self, button):
+        print("Stop Movement Button pressed")
+        # TODO: Handle Button
+
+    def onStopRotorsPress(self, button):
+        print("Stop Rotors Button pressed")
+        # TODO: Handle Button
+
+    def onGoHomePress(self, button):
+        print("Go Home Button pressed")
+        # TODO: Handle Button
+
+    def onRandomPress(self, button):
+        print("Random Button pressed")
+        # TODO: Handle Button
 
     def onKeyPress(self, area, event):
         """
@@ -57,32 +97,31 @@ class Handler:
         keyname = Gdk.keyval_name(event.keyval)
 
         if keyname == 'w':
-            Handler.cam_control.update_forward_trig(1)
+            Handler.cam_control.set_forward_trig(1)
         if keyname == 's':
-            Handler.cam_control.update_forward_trig(-1)
+            Handler.cam_control.set_forward_trig(-1)
         if keyname == 'a':
-            Handler.cam_control.update_right_trig(-1)
+            Handler.cam_control.set_right_trig(-1)
         if keyname == 'd':
-            Handler.cam_control.update_right_trig(1)
+            Handler.cam_control.set_right_trig(1)
         if keyname == 'Shift_L':
-            Handler.cam_control.update_up_trig(1)
+            Handler.cam_control.set_up_trig(1)
         if keyname == 'Control_L':
-            Handler.cam_control.update_up_trig(-1)
+            Handler.cam_control.set_up_trig(-1)
         if keyname == 'q':
-            Handler.cam_control.update_heading_trig(1)
+            Handler.cam_control.set_heading_trig(1)
         if keyname == 'e':
-            Handler.cam_control.update_heading_trig(-1)
+            Handler.cam_control.set_heading_trig(-1)
         if keyname == 'r':
-            Handler.cam_control.update_pitch_trig(1)
+            Handler.cam_control.set_pitch_trig(1)
         if keyname == 'f':
-            Handler.cam_control.update_pitch_trig(-1)
+            Handler.cam_control.set_pitch_trig(-1)
 
         if keyname == 'F1':
             if Handler.bullet_debug_node.isHidden():
                 Handler.bullet_debug_node.show()
             else:
                 Handler.bullet_debug_node.hide()
-
 
     def onKeyRelease(self, area, event):
         """
@@ -91,15 +130,15 @@ class Handler:
         keyname = Gdk.keyval_name(event.keyval)
 
         if keyname == 'w' or keyname == 's':
-            Handler.cam_control.update_forward_trig(0)
+            Handler.cam_control.set_forward_trig(0)
         if keyname == 'a' or keyname == 'd':
-            Handler.cam_control.update_right_trig(0)
+            Handler.cam_control.set_right_trig(0)
         if keyname == 'Shift_L' or keyname == 'Control_L':
-            Handler.cam_control.update_up_trig(0)
+            Handler.cam_control.set_up_trig(0)
         if keyname == 'q' or keyname == 'e':
-            Handler.cam_control.update_heading_trig(0)
+            Handler.cam_control.set_heading_trig(0)
         if keyname == 'r' or keyname == 'f':
-            Handler.cam_control.update_pitch_trig(0)
+            Handler.cam_control.set_pitch_trig(0)
 
 
 class Simulator(ShowBase):
@@ -206,9 +245,13 @@ class Simulator(ShowBase):
         debug_node_panda = self.render.attachNewNode(debug_node_bullet)
         # debug_node_panda.show()
         self.world.setDebugNode(debug_node_panda.node())
-
         # Store it as a class variable of the Handler so the debug mode can be switched by it
         Handler.bullet_debug_node = debug_node_panda
+
+        # Load the class to manage the drones
+        self.drone_manager = DroneManager(self)
+        # Store it as a class variable of the Handler changes can be invoked
+        Handler.drone_manager = self.drone_manager
 
 
 if __name__ == "__main__":
@@ -217,6 +260,11 @@ if __name__ == "__main__":
 
     # Load GTK GUI
     builder.add_from_file("layout.glade")
+
+    # Load some custom CSS
+    css_provider = Gtk.CssProvider()
+    css_provider.load_from_path("gui.css")
+    Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
     # Connect GUI to program
     builder.connect_signals(Handler())
