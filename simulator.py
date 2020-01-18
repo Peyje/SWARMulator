@@ -1,5 +1,18 @@
 # This simulation is influenced by the original sim of Florian Swienty.
 
+# Load  Panda3D modules
+from direct.showbase.ShowBase import ShowBase
+from direct.showbase.ShowBaseGlobal import globalClock
+from panda3d.core import WindowProperties
+from panda3d.core import Vec3
+from panda3d.core import AntialiasAttrib
+from panda3d.core import DirectionalLight
+from panda3d.core import NativeWindowHandle
+from panda3d.bullet import BulletWorld, BulletPlaneShape, BulletRigidBodyNode, BulletDebugNode
+
+# Load classes from other files
+from camera_control import CameraControl
+
 # Import needed modules
 import sys
 import gi
@@ -7,26 +20,6 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GLib
-
-# Load  Panda3D modules
-from direct.showbase.ShowBase import ShowBase
-from panda3d.core import WindowProperties
-from panda3d.core import AntialiasAttrib
-from panda3d.core import DirectionalLight
-from panda3d.core import NativeWindowHandle
-from direct.task import Task
-
-# Load classes from other files
-from camera_control import CameraControl
-
-
-def gtk_iteration(*args, **kw):
-    """
-    Handles the gtk events and lets as many GUI iterations run as needed.
-    """
-    while Gtk.events_pending():
-        Gtk.main_iteration_do(False)
-    return Task.cont
 
 
 class Handler:
@@ -37,6 +30,9 @@ class Handler:
     """
     # Stored to later control the camera through keypresses
     cam_control = []
+
+    # Stored to later control the visibility switching of the bullet debug mode
+    bullet_debug_node = []
 
     def __init__(self):
         self.test_1_button = builder.get_object("test1Button")
@@ -80,6 +76,13 @@ class Handler:
             Handler.cam_control.update_pitch_trig(1)
         if keyname == 'f':
             Handler.cam_control.update_pitch_trig(-1)
+
+        if keyname == 'F1':
+            if Handler.bullet_debug_node.isHidden():
+                Handler.bullet_debug_node.show()
+            else:
+                Handler.bullet_debug_node.hide()
+
 
     def onKeyRelease(self, area, event):
         """
@@ -128,6 +131,17 @@ class Simulator(ShowBase):
         # Open panda window
         self.openDefaultWindow(props=wp)
 
+        def gtk_iteration(task):
+            """
+            Handles the gtk events and lets as many GUI iterations run as needed.
+            """
+            while Gtk.events_pending():
+                Gtk.main_iteration_do(False)
+            return task.cont
+
+        # Create task to update GUI
+        self.taskMgr.add(gtk_iteration, "gtk")
+
         # Activate antialiasing (MAuto for automatic selection of AA form)
         self.render.setAntialias(AntialiasAttrib.MAuto)
 
@@ -146,7 +160,7 @@ class Simulator(ShowBase):
 
         # Load scene
         # TODO: Design a new room
-        self.scene = self.loader.loadModel("models/rooms/room_florian.egg")
+        self.scene = self.loader.loadModel("models/rooms/room_neu.egg")
         self.scene.reparentTo(self.render)  # Panda3D makes use of a scene graph, where "render" is the parent of the
         # tree containing all objects to be rendered
 
@@ -158,8 +172,43 @@ class Simulator(ShowBase):
             dlnp.setHpr((120 * i) + 1, -30, 0)
             self.render.setLight(dlnp)
 
-        # Create task to update GUI
-        self.taskMgr.add(gtk_iteration, "gtk")
+        # Create a bullet world (physics engine)
+        self.world = BulletWorld()
+        self.world.setGravity(Vec3(0, 0, -9.81))
+
+        def update_bullet(task):
+            """
+            Invokes the physics engine to update and simulate the next step.
+            """
+            dt = globalClock.getDt()  # get elapsed time
+            self.world.doPhysics(dt)  # actually update
+            return task.cont
+
+        # Create task to update physics
+        self.taskMgr.add(update_bullet, 'update_bullet')
+
+        # Set up the ground for the physics engine
+        ground_shape = BulletPlaneShape(Vec3(0, 0, 1), 0)  # create a collision shape
+        ground_node_bullet = BulletRigidBodyNode('Ground')  # create rigid body
+        ground_node_bullet.addShape(ground_shape)  # add shape to it
+
+        ground_node_panda = self.render.attachNewNode(ground_node_bullet)  # attach to panda scene graph
+        ground_node_panda.setPos(0, 0, 0)  # set position
+
+        self.world.attachRigidBody(ground_node_bullet)  # attach to physics world
+
+        # Create and activate a debug node for bullet and attach it to the panda scene graph
+        debug_node_bullet = BulletDebugNode('Debug')
+        debug_node_bullet.showWireframe(True)
+        debug_node_bullet.showConstraints(True)
+        debug_node_bullet.showBoundingBoxes(True)
+        debug_node_bullet.showNormals(True)
+        debug_node_panda = self.render.attachNewNode(debug_node_bullet)
+        # debug_node_panda.show()
+        self.world.setDebugNode(debug_node_panda.node())
+
+        # Store it as a class variable of the Handler so the debug mode can be switched by it
+        Handler.bullet_debug_node = debug_node_panda
 
 
 if __name__ == "__main__":
@@ -174,7 +223,7 @@ if __name__ == "__main__":
 
     # Function to call when program is supposed to quit
     def close_app(*args, **kw):
-        Gtk.main_quit()
+        # Gtk.main_quit()  # actually not needed as no main loop is running (gtk_main_iteration_do is used)
         sys.exit(0)
 
     # Main GUI code
