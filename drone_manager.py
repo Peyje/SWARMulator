@@ -86,7 +86,6 @@ class DroneManager(DirectObject.DirectObject):
 		for drone in self.drones:
 			drone.set_debug(active)
 
-
 	def default_formation(self, height):
 		"""
 		Set target of drones to the default formation set in the 'formations/2D/X_default.csv' files

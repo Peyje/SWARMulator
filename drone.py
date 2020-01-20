@@ -161,7 +161,7 @@ class Drone:
 			# Vector to other drone
 			opponent_vector = opponent.get_pos() - self.get_pos()
 			# Multiplier to maximise force when opponent gets closer
-			multiplier = self.AVOIDANCE_PROXIMITY_RADIUS - opponent_vector
+			multiplier = self.AVOIDANCE_PROXIMITY_RADIUS - len(opponent_vector)
 			# Calculate a direction follow (multipliers found by testing)
 			avoidance_direction = self.avoidance_vector * 2 - opponent_vector.normalized() * 10
 			avoidance_direction.normalize()
