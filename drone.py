@@ -65,7 +65,7 @@ class Drone:
         self.base.world.attach(self.rigidBody)
 
         # add a 3d model to the drone to be able to see it in the 3d scene
-        model = self.base.loader.loadModel(self.base.modelDir + "/drones/drone1.egg")
+        model = self.base.loader.loadModel("models/drones/drone_florian.egg")
         model.setScale(0.2)
         model.reparentTo(self.rigidBodyNP)
 
@@ -75,7 +75,7 @@ class Drone:
 
         self.printDebugInfo = printDebugInfo
         if self.printDebugInfo:  # put a second drone model on top of drone that outputs debug stuff
-            model = self.base.loader.loadModel(self.base.modelDir + "/drones/drone1.egg")
+            model = self.base.loader.loadModel("models/drones/drone1_florian.egg")
             model.setScale(0.4)
             model.setPos(0, 0, .2)
             model.reparentTo(self.rigidBodyNP)

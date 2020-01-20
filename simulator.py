@@ -80,7 +80,6 @@ class Simulator(ShowBase):
         Handler.cam_control = self.cam_control
 
         # Load scene
-        # TODO: Design a new room
         self.scene = self.loader.loadModel("models/rooms/room_neu.egg")
         self.scene.reparentTo(self.render)  # Panda3D makes use of a scene graph, where "render" is the parent of the
         # tree containing all objects to be rendered
@@ -95,7 +94,8 @@ class Simulator(ShowBase):
 
         # Create a bullet world (physics engine)
         self.world = BulletWorld()
-        self.world.setGravity(Vec3(0, 0, -9.81))
+        # self.world.setGravity(Vec3(0, 0, -9.81))
+        self.world.setGravity(Vec3(0, 0, 0))
 
         def update_bullet(task):
             """
