@@ -11,6 +11,24 @@ import csv
 import random
 
 
+def load_formation(name):
+	"""
+	Loads a formation from its .csv-file.
+	:param name: Folder of the formation + name of the formation
+	:return: List of the positions of the formation
+	"""
+	path = "formations/" + name
+	formation = []
+
+	# Open file and write each position into a new element of the list
+	with open(path) as csvfile:
+		reader = csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)  # quoting to convert to float automatically
+		for row in reader:
+			formation.append(row)
+
+	return formation
+
+
 class DroneManager(DirectObject.DirectObject):
 	"""
 	This class stores the simulated drones and handles all interaction with them.
@@ -35,6 +53,7 @@ class DroneManager(DirectObject.DirectObject):
 				drone.update()
 			return task.cont
 
+		# Add task to update all drones
 		base.taskMgr.add(update_drones_task, "UpdateDronesTask")
 
 	def update_drone_amount(self, amount):
@@ -59,23 +78,6 @@ class DroneManager(DirectObject.DirectObject):
 		for drone in self.drones:
 			drone.set_pos(drone.get_target())
 
-	def load_formation(self, name):
-		"""
-		Loads a formation from its .csv-file.
-		:param name: Folder of the formation + name of the formation
-		:return: List of the positions of the formation
-		"""
-		path = "formations/" + name
-		formation = []
-
-		# Open file and write each position into a new element of the list
-		with open(path) as csvfile:
-			reader = csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)  # quoting to convert to float automatically
-			for row in reader:
-				formation.append(row)
-
-		return formation
-
 	def default_formation(self, height):
 		"""
 		Set target of drones to the default formation set in the 'formations/2D/X_default.csv' files
@@ -83,7 +85,7 @@ class DroneManager(DirectObject.DirectObject):
 		"""
 		# Load the corresponding formation as a list
 		formation_path = "2D/" + str(len(self.drones)) + "_default.csv"
-		formation = self.load_formation(formation_path)
+		formation = load_formation(formation_path)
 
 		# Update positions of drones
 		for i in range(len(self.drones)):
