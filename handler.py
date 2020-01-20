@@ -27,6 +27,7 @@ class Handler(Gtk.Builder):
 		self.takeoff_toggle = builder.get_object("toggleFlightButton")
 		self.stop_movement_button = builder.get_object("stopMovementButton")
 		self.go_home_button = builder.get_object("goHomeButton")
+		self.spiral_button = builder.get_object("spiralButton")
 		self.random_button = builder.get_object("randomButton")
 
 		# Store different states of GUI objects
@@ -53,6 +54,7 @@ class Handler(Gtk.Builder):
 			self.amount_drones_spinner.set_sensitive(False)
 			self.stop_movement_button.set_sensitive(True)
 			self.go_home_button.set_sensitive(True)
+			self.spiral_button.set_sensitive(True)
 			self.random_button.set_sensitive(True)
 
 		else:
@@ -61,6 +63,7 @@ class Handler(Gtk.Builder):
 			self.amount_drones_spinner.set_sensitive(True)
 			self.stop_movement_button.set_sensitive(False)
 			self.go_home_button.set_sensitive(False)
+			self.spiral_button.set_sensitive(False)
 			self.random_button.set_sensitive(False)
 
 	def onStopMovementPress(self, button):
@@ -68,6 +71,9 @@ class Handler(Gtk.Builder):
 
 	def onGoHomePress(self, button):
 		Handler.drone_manager.default_formation(1)
+
+	def onSpiralPress(self, button):
+		Handler.drone_manager.spiral_formation()
 
 	def onRandomPress(self, button):
 		Handler.drone_manager.random_formation()

@@ -131,3 +131,15 @@ class DroneManager(DirectObject.DirectObject):
 			z = random.uniform(0.3, safe_coordinates.z)
 			drone.set_target(LPoint3f(x, y, z))
 
+	def spiral_formation(self):
+		"""
+		Set target of drones to the spiral formation set in the 'formations/3D/spirals/X_spiral.csv' files
+		"""
+		# Load the corresponding formation as a list
+		formation_path = "3D/spirals/" + str(len(self.drones)) + "_spiral.csv"
+		formation = load_formation(formation_path)
+
+		# Update positions of drones
+		for i in range(len(self.drones)):
+			position_in_formation = LPoint3f(formation[i][0], formation[i][1], formation[i][2])
+			self.drones[i].set_target(position_in_formation)
