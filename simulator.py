@@ -4,7 +4,7 @@
 from direct.showbase.ShowBase import ShowBase
 from direct.showbase.ShowBaseGlobal import globalClock
 from panda3d.core import WindowProperties
-from panda3d.core import Vec3
+from panda3d.core import LVector3f
 from panda3d.core import AntialiasAttrib
 from panda3d.core import DirectionalLight
 from panda3d.core import NativeWindowHandle
@@ -94,8 +94,8 @@ class Simulator(ShowBase):
 
         # Create a bullet world (physics engine)
         self.world = BulletWorld()
-        # self.world.setGravity(Vec3(0, 0, -9.81))
-        self.world.setGravity(Vec3(0, 0, 0))
+        # self.world.setGravity(LVector3f(0, 0, -9.81))
+        self.world.setGravity(LVector3f(0, 0, 0))  # No gravity for now (makes forces easier to calculate)
 
         def update_bullet(task):
             """
@@ -109,7 +109,7 @@ class Simulator(ShowBase):
         self.taskMgr.add(update_bullet, 'update_bullet')
 
         # Set up the ground for the physics engine
-        ground_shape = BulletPlaneShape(Vec3(0, 0, 1), 0)  # create a collision shape
+        ground_shape = BulletPlaneShape(LVector3f(0, 0, 1), 0)  # create a collision shape
         ground_node_bullet = BulletRigidBodyNode('Ground')  # create rigid body
         ground_node_bullet.addShape(ground_shape)  # add shape to it
 

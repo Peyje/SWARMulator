@@ -130,6 +130,7 @@
                   <object class="GtkButton" id="randomButton">
                     <property name="label" translatable="yes">Random Formation</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <signal name="clicked" handler="onRandomPress" swapped="no"/>
@@ -143,6 +144,7 @@
                   <object class="GtkButton" id="goHomeButton">
                     <property name="label" translatable="yes">Go Home</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <signal name="clicked" handler="onGoHomePress" swapped="no"/>
@@ -153,45 +155,18 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkGrid">
+                  <object class="GtkButton" id="stopMovementButton">
+                    <property name="label" translatable="yes">Stop Movement</property>
+                    <property name="name">stopMovementButton</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkButton" id="stopMovementButton">
-                        <property name="label" translatable="yes">Stop Movement</property>
-                        <property name="name">stopMovementButton</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="margin_bottom">10</property>
-                        <signal name="clicked" handler="onStopMovementPress" swapped="no"/>
-                        <style>
-                          <class name="warning"/>
-                        </style>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="stopRotorsButton">
-                        <property name="label" translatable="yes">Stop Rotors</property>
-                        <property name="name">stopRotorsButton</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="margin_bottom">10</property>
-                        <signal name="clicked" handler="onStopRotorsPress" swapped="no"/>
-                        <style>
-                          <class name="warning"/>
-                        </style>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">0</property>
-                      </packing>
-                    </child>
+                    <property name="sensitive">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="margin_bottom">10</property>
+                    <signal name="clicked" handler="onStopMovementPress" swapped="no"/>
+                    <style>
+                      <class name="warning"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>

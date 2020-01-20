@@ -26,7 +26,6 @@ class Handler(Gtk.Builder):
         self.amount_drones_adjustment = builder.get_object("amountDronesAdj")
         self.takeoff_toggle = builder.get_object("toggleFlightButton")
         self.stop_movement_button = builder.get_object("stopMovementButton")
-        self.stop_rotors_button = builder.get_object("stopRotorsButton")
         self.go_home_button = builder.get_object("goHomeButton")
         self.random_button = builder.get_object("randomButton")
 
@@ -52,26 +51,27 @@ class Handler(Gtk.Builder):
             Handler.drone_manager.takeoff()
             self.takeoff_toggle.set_label("Land")
             self.amount_drones_spinner.set_sensitive(False)
+            self.stop_movement_button.set_sensitive(True)
+            self.go_home_button.set_sensitive(True)
+            self.random_button.set_sensitive(True)
+
         else:
             Handler.drone_manager.land()
             self.takeoff_toggle.set_label("Takeoff")
             self.amount_drones_spinner.set_sensitive(True)
+            self.stop_movement_button.set_sensitive(False)
+            self.go_home_button.set_sensitive(False)
+            self.random_button.set_sensitive(False)
 
     def onStopMovementPress(self, button):
-        print("Stop Movement Button pressed")
-        # TODO: Handle Button
-
-    def onStopRotorsPress(self, button):
-        print("Stop Rotors Button pressed")
-        # TODO: Handle Button
+        Handler.drone_manager.stop_movement()
 
     def onGoHomePress(self, button):
-        print("Go Home Button pressed")
-        # TODO: Handle Button
+        Handler.drone_manager.default_formation(1)
 
     def onRandomPress(self, button):
-        print("Random Button pressed")
-        # TODO: Handle Button
+        Handler.drone_manager.random_formation()
+
 
     def onKeyPress(self, area, event):
         """
