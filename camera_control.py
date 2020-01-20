@@ -9,7 +9,7 @@ def reset_camera(base):
 	"""
 	Set camera to default position.
 	"""
-	base.camera.setPos(-4, 0, 2)
+	base.camera.setPos(0, -4, 2)
 	base.camera.lookAt(0, 0, 1)
 
 
