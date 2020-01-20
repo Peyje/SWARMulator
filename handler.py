@@ -108,8 +108,10 @@ class Handler(Gtk.Builder):
 		if keyname == 'F1':
 			if Handler.bullet_debug_node.isHidden():
 				Handler.bullet_debug_node.show()
+				Handler.drone_manager.set_debug(True)
 			else:
 				Handler.bullet_debug_node.hide()
+				Handler.drone_manager.set_debug(False)
 
 	def onKeyRelease(self, area, event):
 		"""

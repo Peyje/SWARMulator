@@ -78,6 +78,15 @@ class DroneManager(DirectObject.DirectObject):
 		for drone in self.drones:
 			drone.set_pos(drone.get_target())
 
+	def set_debug(self, active):
+		"""
+		De-/active debugging for all drones.
+		:param active: If debugging should be turned on or off.
+		"""
+		for drone in self.drones:
+			drone.set_debug(active)
+
+
 	def default_formation(self, height):
 		"""
 		Set target of drones to the default formation set in the 'formations/2D/X_default.csv' files

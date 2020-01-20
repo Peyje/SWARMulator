@@ -34,6 +34,7 @@ class Drone:
 		self.manager = manager  # Drone manager handling this drone
 		self.base = manager.base  # Simulation
 		self.uri = None  # URI of real drone, if connected to one
+		self.debug = False  # If debugging info should be given
 
 		# Every drone has its own vector to follow if an avoidance manouver has to be done
 		self.avoidance_vector = LVector3f(random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)).normalize()
@@ -99,6 +100,19 @@ class Drone:
 		"""
 		self.target_position = position
 
+	def set_debug(self, active):
+		"""
+		De-/activate debug information such as lines showing forces and such.
+		:param active: If debugging should be turned on or off.
+		"""
+		self.debug = active
+
+		if active:
+			# Create a line so the updater can update it
+			self.target_line_node = self.base.render.attachNewNode(self.line_creator.create(False))
+		else:
+			self.target_line_node.removeNode()
+
 	def update(self):
 		"""
 		Update the drone and its forces.
@@ -113,7 +127,8 @@ class Drone:
 		self._combine_forces()
 
 		# Update the line drawn to the current target
-		self._draw_target_line()
+		if self.debug:
+			self._draw_target_line()
 
 	def _update_target_force(self):
 		"""
@@ -179,7 +194,7 @@ class Drone:
 		self.target_line_node.removeNode()
 
 		# Create a new one
-		self.line_creator.setColor(0.0, 1.0, 0.0, 1.0)
+		self.line_creator.setColor(1.0, 0.0, 0.0, 1.0)
 		self.line_creator.moveTo(self.get_pos())
 		self.line_creator.drawTo(self.target_position)
 		line = self.line_creator.create(False)
