@@ -4,6 +4,9 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 
+# Load other files
+import reality_manager
+
 
 class Handler(Gtk.Builder):
 	"""
@@ -22,6 +25,7 @@ class Handler(Gtk.Builder):
 
 	def __init__(self, builder):
 		# Get GUI objects to manipulate
+		self.mode_switch = builder.get_object("modeSwitch")
 		self.amount_drones_spinner = builder.get_object("amountDronesSpinner")
 		self.amount_drones_adjustment = builder.get_object("amountDronesAdj")
 		self.takeoff_toggle = builder.get_object("toggleFlightButton")
@@ -29,10 +33,25 @@ class Handler(Gtk.Builder):
 		self.go_home_button = builder.get_object("goHomeButton")
 		self.spiral_button = builder.get_object("spiralButton")
 		self.random_button = builder.get_object("randomButton")
+		self.scanned_drones_store = builder.get_object("scannedDronesStore")
 
 		# Store different states of GUI objects
+		self.mode_state = self.mode_switch.get_active()  # True == on
 		self.takeoff_toggle_state = self.takeoff_toggle.get_active()  # True == pressed
 		self.amount_drones_value = self.amount_drones_adjustment.get_value()
+
+	def onModeSwitchActivate(self, button, state):
+		"""
+		Switch mode (connection to real drones OR pure simulation) depending on switch.
+		"""
+		# TODO: Actually connect to reality
+		self.mode_state = self.mode_switch.get_active()
+
+		# Change GUI corresponding to state of switch
+		if self.mode_state:
+			self.amount_drones_spinner.set_sensitive(False)
+		else:
+			self.amount_drones_spinner.set_sensitive(True)
 
 	def onAmountDronesChange(self, adjustment):
 		"""
@@ -51,6 +70,7 @@ class Handler(Gtk.Builder):
 		if self.takeoff_toggle_state:
 			Handler.drone_manager.takeoff()
 			self.takeoff_toggle.set_label("Land")
+			self.mode_switch.set_sensitive(False)
 			self.amount_drones_spinner.set_sensitive(False)
 			self.stop_movement_button.set_sensitive(True)
 			self.go_home_button.set_sensitive(True)
@@ -60,7 +80,9 @@ class Handler(Gtk.Builder):
 		else:
 			Handler.drone_manager.land()
 			self.takeoff_toggle.set_label("Takeoff")
-			self.amount_drones_spinner.set_sensitive(True)
+			self.mode_switch.set_sensitive(True)
+			if not self.mode_state:
+				self.amount_drones_spinner.set_sensitive(True)
 			self.stop_movement_button.set_sensitive(False)
 			self.go_home_button.set_sensitive(False)
 			self.spiral_button.set_sensitive(False)
@@ -77,6 +99,13 @@ class Handler(Gtk.Builder):
 
 	def onRandomPress(self, button):
 		Handler.drone_manager.random_formation()
+
+	def onScanPress(self, button):
+		# TODO: Handle found drones
+		self.scanned_drones_store.clear()
+		found_drones = reality_manager.scan_for_drones()
+		for drones in found_drones:
+			self.scanned_drones_store.append([drones])
 
 	def onKeyPress(self, area, event):
 		"""

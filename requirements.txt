@@ -1,1 +1,2 @@
 panda3d >= 1.10.5
+-e git://github.com/bitcraze/crazyflie-lib-python.git#egg=crazyflie-lib-python
