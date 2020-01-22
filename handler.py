@@ -101,17 +101,22 @@ class Handler(Gtk.Builder):
 		Handler.drone_manager.random_formation()
 
 	def onScanPress(self, button):
-		# TODO: Handle found drones
+		# Clear storage
 		self.scanned_drones_store.clear()
+
+		# Scan for drones
 		found_drones = reality_manager.scan_for_drones()
-		for drones in found_drones:
-			self.scanned_drones_store.append([drones])
+
+		# Write to storage
+		for drone in found_drones:
+			self.scanned_drones_store.append([drone[0]])
 
 	def onKeyPress(self, area, event):
 		"""
 		Called on any key press, it finds the corresponding function and calls it. Mostly used for moving the camera.
 		"""
 		keyname = Gdk.keyval_name(event.keyval)
+		print("Key pressed" + str(keyname))
 
 		if keyname == 'w':
 			Handler.cam_control.set_forward_trig(1)
