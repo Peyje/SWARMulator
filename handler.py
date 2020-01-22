@@ -1,4 +1,6 @@
 # Import needed modules
+import threading
+
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -34,11 +36,28 @@ class Handler(Gtk.Builder):
 		self.spiral_button = builder.get_object("spiralButton")
 		self.random_button = builder.get_object("randomButton")
 		self.scanned_drones_store = builder.get_object("scannedDronesStore")
+		self.progress_bar_scan = builder.get_object("progressBarScan")
 
 		# Store different states of GUI objects
 		self.mode_state = self.mode_switch.get_active()  # True == on
 		self.takeoff_toggle_state = self.takeoff_toggle.get_active()  # True == pressed
 		self.amount_drones_value = self.amount_drones_adjustment.get_value()
+
+	def update_progress_scan(self, fraction, address):
+		"""
+		Set the fraction of the progress bar for scanning for drones.
+		:param fraction: Fraction of task done.
+		:param address: Text to set for bar.
+		"""
+		self.progress_bar_scan.set_fraction(fraction)
+		self.progress_bar_scan.set_text(address)
+
+	def add_to_drone_store(self, drone):
+		"""
+		Add a drone to the drone store.
+		:param drone: Drone to add.
+		"""
+		self.scanned_drones_store.append(drone)
 
 	def onModeSwitchActivate(self, button, state):
 		"""
@@ -104,19 +123,16 @@ class Handler(Gtk.Builder):
 		# Clear storage
 		self.scanned_drones_store.clear()
 
-		# Scan for drones
-		found_drones = reality_manager.scan_for_drones()
+		# Scan for drones in seperate thread as to not brick the GUI
+		thread = threading.Thread(target=reality_manager.scan_for_drones, args=(self, ))
+		thread.start()
 
-		# Write to storage
-		for drone in found_drones:
-			self.scanned_drones_store.append([drone[0]])
 
 	def onKeyPress(self, area, event):
 		"""
 		Called on any key press, it finds the corresponding function and calls it. Mostly used for moving the camera.
 		"""
 		keyname = Gdk.keyval_name(event.keyval)
-		print("Key pressed" + str(keyname))
 
 		if keyname == 'w':
 			Handler.cam_control.set_forward_trig(1)
