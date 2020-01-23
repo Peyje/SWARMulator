@@ -182,6 +182,26 @@ class DroneManager(DirectObject.DirectObject):
 		"""
 		self.base.taskMgr.doMethodLater(0.1, self._set_rotation_task, "RotationTask", extraArgs=[drones, origin, speed, clockwise], appendTask=True)
 
+	def set_movement(self, drones, x, y, z):
+		"""
+		Set a new target for multiple drones.
+		:param drones: Drones to move.
+		:param x: Relative X movement
+		:param y: Relative Y movement
+		:param z: Relative Z movement
+		"""
+		for i in drones:
+			# Get current target
+			current_target = self.drones[i].get_target()
+
+			# Add relative movement
+			current_target.x += x
+			current_target.y += y
+			current_target.z += z
+
+			# Set new target
+			self.drones[i].set_target(current_target)
+
 	def _set_rotation_task(self, drones, origin, speed, clockwise, task):
 		"""
 		Add a task add a constant rotation to certain drones.

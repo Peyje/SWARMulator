@@ -51,7 +51,6 @@ class Handler(Gtk.Builder):
 		self.drone_choosers.append(builder.get_object("droneChooser8"))
 		self.drone_choosers.append(builder.get_object("droneChooser9"))
 
-
 		# GUI objects of rotation menu
 		self.rotation_add_x = builder.get_object("rotationAddX")
 		self.rotation_add_y = builder.get_object("rotationAddY")
@@ -59,6 +58,12 @@ class Handler(Gtk.Builder):
 		self.rotation_add_speed = builder.get_object("rotationAddSpeed")
 		self.add_rotation_button = builder.get_object("addRotationButton")
 		self.stop_rotations = builder.get_object("stopRotationButton")
+
+		# GUI objects of movement menu
+		self.movement_add_x = builder.get_object("movementAddX")
+		self.movement_add_y = builder.get_object("movementAddY")
+		self.movement_add_z = builder.get_object("movementAddZ")
+		self.move_button = builder.get_object("moveButton")
 
 		# Store different states of GUI objects
 		self.mode_state = self.mode_switch.get_active()  # True == on
@@ -124,6 +129,10 @@ class Handler(Gtk.Builder):
 			self.rotation_add_cw.set_sensitive(True)
 			self.rotation_add_speed.set_sensitive(True)
 			self.add_rotation_button.set_sensitive(True)
+			self.movement_add_x.set_sensitive(True)
+			self.movement_add_y.set_sensitive(True)
+			self.movement_add_z.set_sensitive(True)
+			self.move_button.set_sensitive(True)
 
 		else:
 			Handler.drone_manager.land()
@@ -143,6 +152,10 @@ class Handler(Gtk.Builder):
 			self.rotation_add_speed.set_sensitive(False)
 			self.add_rotation_button.set_sensitive(False)
 			self.stop_rotations.set_sensitive(False)
+			self.movement_add_x.set_sensitive(False)
+			self.movement_add_y.set_sensitive(False)
+			self.movement_add_z.set_sensitive(False)
+			self.move_button.set_sensitive(False)
 
 	def onStopMovementPress(self, button):
 		Handler.drone_manager.stop_movement()
@@ -187,6 +200,18 @@ class Handler(Gtk.Builder):
 
 		# Set button to stop it to sensitive
 		self.stop_rotations.set_sensitive(True)
+
+	def onMovePress(self, button):
+		# Load values from GUI
+		drones = []
+		for num, checkbutton in enumerate(self.drone_choosers):
+			if checkbutton.get_active():
+				drones.append(num)
+		x = float(self.movement_add_x.get_text())
+		y = float(self.movement_add_y.get_text())
+		z = float(self.movement_add_z.get_text())
+
+		Handler.drone_manager.set_movement(drones, x, y, z)
 
 
 	def onKeyPress(self, area, event):
