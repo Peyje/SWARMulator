@@ -28,6 +28,9 @@ class Simulator(ShowBase):
 	Main class of the simulation itself. Mostly initialisation.
 	"""
 
+	PANDA_WINDOW_WIDTH = 800  # Width of panda window in GTK
+	PANDA_WINDOW_HEIGHT = 600  # Height of panda window in GTK
+
 	def __init__(self):
 		"""
 		Creates the window, loads the scene and models and sets everything up.
@@ -39,11 +42,11 @@ class Simulator(ShowBase):
 		# Setup window
 		wp = WindowProperties()
 		wp.setOrigin(0, 0)
-		wp.setSize(1024, 768)
+		wp.setSize(self.PANDA_WINDOW_WIDTH, self.PANDA_WINDOW_HEIGHT)
 
 		# Get drawing area and set its size
 		panda_drawing_area = builder.get_object("pandaDrawingArea")
-		panda_drawing_area.set_size_request(1024, 768)
+		panda_drawing_area.set_size_request(self.PANDA_WINDOW_WIDTH, self.PANDA_WINDOW_HEIGHT)
 
 		# Panda should not open own top level window but use the window of the drawing area in GTK
 		handle = NativeWindowHandle.makeInt(panda_drawing_area.get_property('window').get_xid())

@@ -38,6 +38,28 @@ class Handler(Gtk.Builder):
 		self.scanned_drones_store = builder.get_object("scannedDronesStore")
 		self.progress_bar_scan = builder.get_object("progressBarScan")
 
+		# CheckButtons to choose drones
+		self.drone_choosers = []
+		self.drone_choosers.append(builder.get_object("droneChooser0"))
+		self.drone_choosers.append(builder.get_object("droneChooser1"))
+		self.drone_choosers.append(builder.get_object("droneChooser2"))
+		self.drone_choosers.append(builder.get_object("droneChooser3"))
+		self.drone_choosers.append(builder.get_object("droneChooser4"))
+		self.drone_choosers.append(builder.get_object("droneChooser5"))
+		self.drone_choosers.append(builder.get_object("droneChooser6"))
+		self.drone_choosers.append(builder.get_object("droneChooser7"))
+		self.drone_choosers.append(builder.get_object("droneChooser8"))
+		self.drone_choosers.append(builder.get_object("droneChooser9"))
+
+
+		# GUI objects of rotation menu
+		self.rotation_add_x = builder.get_object("rotationAddX")
+		self.rotation_add_y = builder.get_object("rotationAddY")
+		self.rotation_add_cw = builder.get_object("rotationAddCW")
+		self.rotation_add_speed = builder.get_object("rotationAddSpeed")
+		self.add_rotation_button = builder.get_object("addRotationButton")
+		self.stop_rotations = builder.get_object("stopRotationButton")
+
 		# Store different states of GUI objects
 		self.mode_state = self.mode_switch.get_active()  # True == on
 		self.takeoff_toggle_state = self.takeoff_toggle.get_active()  # True == pressed
@@ -95,6 +117,13 @@ class Handler(Gtk.Builder):
 			self.go_home_button.set_sensitive(True)
 			self.spiral_button.set_sensitive(True)
 			self.random_button.set_sensitive(True)
+			for checkbutton in self.drone_choosers:
+				checkbutton.set_sensitive(True)
+			self.rotation_add_x.set_sensitive(True)
+			self.rotation_add_y.set_sensitive(True)
+			self.rotation_add_cw.set_sensitive(True)
+			self.rotation_add_speed.set_sensitive(True)
+			self.add_rotation_button.set_sensitive(True)
 
 		else:
 			Handler.drone_manager.land()
@@ -106,9 +135,22 @@ class Handler(Gtk.Builder):
 			self.go_home_button.set_sensitive(False)
 			self.spiral_button.set_sensitive(False)
 			self.random_button.set_sensitive(False)
+			for checkbutton in self.drone_choosers:
+				checkbutton.set_sensitive(False)
+			self.rotation_add_x.set_sensitive(False)
+			self.rotation_add_y.set_sensitive(False)
+			self.rotation_add_cw.set_sensitive(False)
+			self.rotation_add_speed.set_sensitive(False)
+			self.add_rotation_button.set_sensitive(False)
+			self.stop_rotations.set_sensitive(False)
 
 	def onStopMovementPress(self, button):
 		Handler.drone_manager.stop_movement()
+		self.stop_rotations.set_sensitive(False)
+
+	def onStopRotationPress(self, button):
+		Handler.drone_manager.stop_rotation()
+		self.stop_rotations.set_sensitive(False)
 
 	def onGoHomePress(self, button):
 		Handler.drone_manager.default_formation(1)
@@ -126,6 +168,25 @@ class Handler(Gtk.Builder):
 		# Scan for drones in seperate thread as to not brick the GUI
 		thread = threading.Thread(target=reality_manager.scan_for_drones, args=(self, ))
 		thread.start()
+
+	def onAddRotationPress(self, button):
+		"""
+		Add a constant rotation to the chosen drones.
+		"""
+		# Load values from GUI
+		drones = []
+		for num, checkbutton in enumerate(self.drone_choosers):
+			if checkbutton.get_active():
+				drones.append(num)
+		origin = float(self.rotation_add_x.get_text()), float(self.rotation_add_y.get_text())
+		cw = self.rotation_add_cw.get_active()
+		speed = float(self.rotation_add_speed.get_text()) / 10  # Input is per second, task runs at .1 seconds
+
+		# Call rotation into action
+		Handler.drone_manager.set_rotation(drones, origin, speed, cw)
+
+		# Set button to stop it to sensitive
+		self.stop_rotations.set_sensitive(True)
 
 
 	def onKeyPress(self, area, event):

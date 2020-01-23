@@ -9,6 +9,7 @@ from drone import Drone
 # Import needed modules
 import csv
 import random
+import math
 
 
 def load_formation(name):
@@ -27,6 +28,25 @@ def load_formation(name):
 			formation.append(row)
 
 	return formation
+
+
+def rotate_z(origin, point, angle):
+	"""
+	Rotate a point counterclockwise by a given angle around a given origin.
+	Idea: https://stackoverflow.com/questions/34372480/rotate-point-about-another-point-in-degrees-python
+	:param origin: Tuple describing the origin of the rotation
+	:param point: Point to rotate
+	:param angle: Angle to rotate in degrees
+	:return: Rotated point
+	"""
+	angle = math.radians(angle)
+
+	ox, oy = origin
+	px, py = point.x, point.y
+
+	qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
+	qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
+	return LPoint3f(qx, qy, point.z)
 
 
 class DroneManager(DirectObject.DirectObject):
@@ -113,6 +133,9 @@ class DroneManager(DirectObject.DirectObject):
 		"""
 		Set the drones down where they are in X and Y right now.
 		"""
+		# Stop rotations, if there are any
+		self.stop_rotation()
+
 		self.in_flight = False
 		for drone in self.drones:
 			pos = drone.get_pos()
@@ -122,6 +145,7 @@ class DroneManager(DirectObject.DirectObject):
 		"""
 		To stop all current movement just set the current position to the target position.
 		"""
+		self.stop_rotation()
 		for drone in self.drones:
 			pos = drone.get_pos()
 			drone.set_target(LPoint3f(pos[0], pos[1], pos[2]))
@@ -151,3 +175,39 @@ class DroneManager(DirectObject.DirectObject):
 		for i in range(len(self.drones)):
 			position_in_formation = LPoint3f(formation[i][0], formation[i][1], formation[i][2])
 			self.drones[i].set_target(position_in_formation)
+
+	def set_rotation(self, drones, origin, speed, clockwise):
+		"""
+		Add a rotation task as wanted. See task for param doc.
+		"""
+		self.base.taskMgr.doMethodLater(0.1, self._set_rotation_task, "RotationTask", extraArgs=[drones, origin, speed, clockwise], appendTask=True)
+
+	def _set_rotation_task(self, drones, origin, speed, clockwise, task):
+		"""
+		Add a task add a constant rotation to certain drones.
+		:param drones: Which drones should join the rotation.
+		:param origin: Origin for rotation.
+		:param speed: XXX
+		:param clockwise: If rotation should go clockwise.
+		"""
+		# Invert speed if clockwise is wanted (default is mathematically positive)
+		if clockwise:
+			speed = -speed
+
+		for i in drones:
+			# Get current target
+			current_target = self.drones[i].get_target()
+
+			# Calculate new target
+			new_target = rotate_z(origin, current_target, speed)
+
+			# Set new target
+			self.drones[i].set_target(new_target)
+
+		return task.again
+
+	def stop_rotation(self):
+		"""
+		Stop all rotations
+		"""
+		self.base.taskMgr.remove("RotationTask")
