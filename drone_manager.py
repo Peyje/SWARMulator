@@ -107,24 +107,33 @@ class DroneManager(DirectObject.DirectObject):
 		Set amount of drones to actual drones in reality and set up simulated drones to work with real ones.
 		:param uris: URIs of the drones to connect to.
 		"""
+		# Update amount of drones to that of real drones
 		self.update_drone_amount(len(uris))
 
+		# For every drone, create SyncCrazyflie object and store it, then connect to the drone via it
 		for num, drone in enumerate(self.drones):
 			drone.crazyflie = SyncCrazyflie(uris[num], cf=Crazyflie(rw_cache='./cache'))
 			drone.crazyflie.open_link()
 
 	def disconnect_reality(self):
+		"""
+		Disconnects all real drones and sets amount to 0 (until new drones are connected or mode is set to unlink).
+		"""
+		# Send every drone the command to stop all rotors, then disconnect and remove object from drone
 		for num, drone in enumerate(self.drones):
 			drone.crazyflie.cf.commander.send_stop_setpoint()
-			time.sleep(.1)
+			time.sleep(.1)  # Wait until command is sent as queue is not flushed before closing link
 			drone.crazyflie.close_link()
 			drone.crazyflie = None
 
 		self.update_drone_amount(0)
 
 	def stop_rotors(self):
+		"""
+		Stop all rotors of connected drones immediately and stop updating setpoint.
+		"""
 		for drone in self.drones:
-			drone.in_flight = False
+			drone.in_flight = False  # To stop updating in update loop of drone
 			if drone.crazyflie is not None:
 				drone.crazyflie.cf.commander.send_stop_setpoint()
 				print("STOP!")

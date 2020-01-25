@@ -88,7 +88,7 @@ class Handler(Gtk.Builder):
 
 	def update_connect_button(self):
 		"""
-		Turn button on if drones are found and simulation is linked, else not.
+		Turn button on if drones are found and simulation is linked and if not connected yet, else not.
 		"""
 		if len(self.scanned_drones_store) > 0 and self.mode_state and not self.connected:
 			self.connect_button.set_sensitive(True)
@@ -106,19 +106,23 @@ class Handler(Gtk.Builder):
 		"""
 		Switch mode (connection to real drones OR pure simulation) depending on switch.
 		"""
+		# Get current mode
 		self.mode_state = self.mode_switch.get_active()
+		# Update connect button
+		self.update_connect_button()
 
-		# Change GUI corresponding to state of switch
-		if self.mode_state:
+		if self.mode_state:  # If linked to reality
+			# Change GUI corresponding to state of switch
 			self.amount_drones_spinner.set_sensitive(False)
-			self.update_connect_button()
-			Handler.drone_manager.update_drone_amount(0)
 			self.takeoff_toggle.set_sensitive(False)
+			# Set drone amount of simulation to 0 until drones are connected
+			Handler.drone_manager.update_drone_amount(0)
 		else:
+			# Change GUI corresponding to state of switch
 			self.amount_drones_spinner.set_sensitive(True)
-			self.update_connect_button()
-			Handler.drone_manager.update_drone_amount(self.amount_drones_value)
 			self.takeoff_toggle.set_sensitive(True)
+			# Reset drone amount to prior state
+			Handler.drone_manager.update_drone_amount(self.amount_drones_value)
 
 	def onAmountDronesChange(self, adjustment):
 		"""
@@ -156,7 +160,6 @@ class Handler(Gtk.Builder):
 			self.move_button.set_sensitive(True)
 			self.connect_button.set_sensitive(False)
 			self.disconnect_button.set_sensitive(False)
-
 		else:
 			Handler.drone_manager.land()
 			self.takeoff_toggle.set_label("Takeoff")
@@ -219,11 +222,13 @@ class Handler(Gtk.Builder):
 	def onConnectPress(self, button):
 		self.connected = True
 
+		# Send pure URI strings to function to connect to drones
 		uris = []
 		for drone in self.scanned_drones_store:
 			uris.append(drone[0])
 		self.drone_manager.connect_reality(uris)
 
+		# Update GUI correspondingly
 		self.connect_button.set_sensitive(False)
 		self.mode_switch.set_sensitive(False)
 		self.disconnect_button.set_sensitive(True)
@@ -233,6 +238,8 @@ class Handler(Gtk.Builder):
 	def onDisconnectPress(self, button):
 		self.connected = False
 		self.drone_manager.disconnect_reality()
+
+		# Update GUI correspondingly
 		self.connect_button.set_sensitive(True)
 		self.mode_switch.set_sensitive(True)
 		self.disconnect_button.set_sensitive(False)
