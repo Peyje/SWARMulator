@@ -3,6 +3,10 @@ from direct.showbase import DirectObject
 from panda3d.core import LPoint3f
 from panda3d.core import LVector3f
 
+# Load Crazyflie modules
+from cflib.crazyflie import Crazyflie
+from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
+
 # Load classes from other files
 from drone import Drone
 
@@ -10,6 +14,7 @@ from drone import Drone
 import csv
 import random
 import math
+import time
 
 
 def load_formation(name):
@@ -63,8 +68,6 @@ class DroneManager(DirectObject.DirectObject):
 		self.drones = []  # List of drones in simulation
 		self.update_drone_amount(3)  # Start of with 3 drones
 
-		self.in_flight = False  # As drones are not started yet
-
 		def update_drones_task(task):
 			"""
 			Update every drone in the simulation.
@@ -92,11 +95,39 @@ class DroneManager(DirectObject.DirectObject):
 
 		# Update their targets to the default formation
 		# As to not reach into the ground: height = size of collision bounds
-		self.default_formation(self.drones[0].COLLISION_SPHERE_RADIUS)
+		if len(self.drones) > 0:
+			self.default_formation(self.drones[0].COLLISION_SPHERE_RADIUS)
 
 		# Set them into their default formation
 		for drone in self.drones:
 			drone.set_pos(drone.get_target())
+
+	def connect_reality(self, uris):
+		"""
+		Set amount of drones to actual drones in reality and set up simulated drones to work with real ones.
+		:param uris: URIs of the drones to connect to.
+		"""
+		self.update_drone_amount(len(uris))
+
+		for num, drone in enumerate(self.drones):
+			drone.crazyflie = SyncCrazyflie(uris[num], cf=Crazyflie(rw_cache='./cache'))
+			drone.crazyflie.open_link()
+
+	def disconnect_reality(self):
+		for num, drone in enumerate(self.drones):
+			drone.crazyflie.cf.commander.send_stop_setpoint()
+			time.sleep(.1)
+			drone.crazyflie.close_link()
+			drone.crazyflie = None
+
+		self.update_drone_amount(0)
+
+	def stop_rotors(self):
+		for drone in self.drones:
+			drone.in_flight = False
+			if drone.crazyflie is not None:
+				drone.crazyflie.cf.commander.send_stop_setpoint()
+				print("STOP!")
 
 	def set_debug(self, active):
 		"""
@@ -124,8 +155,8 @@ class DroneManager(DirectObject.DirectObject):
 		"""
 		Let the drones takeoff to one meter above their current position.
 		"""
-		self.in_flight = True
 		for drone in self.drones:
+			drone.in_flight = True
 			pos = drone.get_pos()
 			drone.set_target(LPoint3f(pos[0], pos[1], 1))
 
@@ -136,10 +167,13 @@ class DroneManager(DirectObject.DirectObject):
 		# Stop rotations, if there are any
 		self.stop_rotation()
 
-		self.in_flight = False
 		for drone in self.drones:
 			pos = drone.get_pos()
 			drone.set_target(LPoint3f(pos[0], pos[1], 0.1))
+
+		time.sleep(1)
+		for drone in self.drones:
+			drone.in_flight = False
 
 	def stop_movement(self):
 		"""

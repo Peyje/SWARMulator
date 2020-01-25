@@ -304,6 +304,80 @@
                         <property name="position">2</property>
                       </packing>
                     </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="valign">end</property>
+                        <property name="margin_left">5</property>
+                        <property name="margin_right">5</property>
+                        <property name="margin_top">5</property>
+                        <property name="margin_bottom">5</property>
+                        <property name="label" translatable="yes">Link simulation and reality to enable:</property>
+                        <attributes>
+                          <attribute name="underline" value="True"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="connectButton">
+                        <property name="label" translatable="yes">Connect</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="valign">end</property>
+                        <property name="margin_left">15</property>
+                        <property name="margin_right">15</property>
+                        <property name="margin_top">5</property>
+                        <property name="margin_bottom">5</property>
+                        <signal name="clicked" handler="onConnectPress" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="connectedLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="valign">end</property>
+                        <property name="margin_left">5</property>
+                        <property name="margin_right">5</property>
+                        <property name="label" translatable="yes">Currently, there are 0 drones connected.</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="disconnectButton">
+                        <property name="label" translatable="yes">Disconnect</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="margin_left">15</property>
+                        <property name="margin_right">15</property>
+                        <property name="margin_top">5</property>
+                        <property name="margin_bottom">10</property>
+                        <signal name="clicked" handler="onDisconnectPress" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">6</property>
+                      </packing>
+                    </child>
                   </object>
                 </child>
                 <child type="label">
@@ -815,12 +889,14 @@
                                 <child>
                                   <object class="GtkEntry" id="movementAddX">
                                     <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="margin_left">5</property>
                                     <property name="margin_right">10</property>
                                     <property name="margin_top">10</property>
                                     <property name="margin_bottom">5</property>
                                     <property name="width_chars">1</property>
+                                    <property name="placeholder_text" translatable="yes">X</property>
                                     <property name="input_purpose">number</property>
                                   </object>
                                   <packing>
@@ -831,12 +907,14 @@
                                 <child>
                                   <object class="GtkEntry" id="movementAddY">
                                     <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="margin_left">5</property>
                                     <property name="margin_right">10</property>
                                     <property name="margin_top">5</property>
                                     <property name="margin_bottom">5</property>
                                     <property name="width_chars">1</property>
+                                    <property name="placeholder_text" translatable="yes">Y</property>
                                     <property name="input_purpose">number</property>
                                   </object>
                                   <packing>
@@ -847,12 +925,14 @@
                                 <child>
                                   <object class="GtkEntry" id="movementAddZ">
                                     <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="margin_left">5</property>
                                     <property name="margin_right">10</property>
                                     <property name="margin_top">5</property>
                                     <property name="margin_bottom">5</property>
                                     <property name="width_chars">2</property>
+                                    <property name="placeholder_text" translatable="yes">Z</property>
                                     <property name="input_purpose">number</property>
                                   </object>
                                   <packing>
@@ -985,17 +1065,21 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="stopRotationButton">
-                        <property name="label" translatable="yes">Stop Rotations</property>
+                      <object class="GtkButton" id="stopRotorsButton">
+                        <property name="label" translatable="yes">Stop Rotors
+     (Reset)</property>
+                        <property name="name">stopRotorsButton</property>
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="margin_left">15</property>
                         <property name="margin_right">5</property>
                         <property name="margin_top">5</property>
                         <property name="margin_bottom">10</property>
-                        <signal name="clicked" handler="onStopRotationPress" swapped="no"/>
+                        <signal name="clicked" handler="onStopRotorsPress" swapped="no"/>
+                        <style>
+                          <class name="warning"/>
+                        </style>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
@@ -1008,6 +1092,31 @@
                     <property name="top_attach">0</property>
                     <property name="height">3</property>
                   </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="stopRotationButton">
+                    <property name="label" translatable="yes">Stop Rotations</property>
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="valign">center</property>
+                    <property name="margin_left">5</property>
+                    <property name="margin_right">15</property>
+                    <property name="margin_top">5</property>
+                    <property name="margin_bottom">5</property>
+                    <signal name="clicked" handler="onStopRotationPress" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
                 </child>
               </object>
             </child>

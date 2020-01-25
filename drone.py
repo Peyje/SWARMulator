@@ -33,8 +33,9 @@ class Drone:
 		"""
 		self.manager = manager  # Drone manager handling this drone
 		self.base = manager.base  # Simulation
-		self.uri = None  # URI of real drone, if connected to one
+		self.crazyflie = None  # object of real drone, if connected to one
 		self.debug = False  # If debugging info should be given
+		self.in_flight = False  # If currently in flight
 
 		# Every drone has its own vector to follow if an avoidance manouver has to be done
 		self.avoidance_vector = LVector3f(random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)).normalize()
@@ -129,6 +130,12 @@ class Drone:
 		# Update the line drawn to the current target
 		if self.debug:
 			self._draw_target_line()
+
+		# Update real drone if connected to one
+		if self.crazyflie is not None and self.in_flight:
+			current_pos = self.get_pos()
+			self.crazyflie.cf.commander.send_position_setpoint(current_pos.x, current_pos.y, current_pos.z, 0)
+			print("Update!")
 
 	def _update_target_force(self):
 		"""

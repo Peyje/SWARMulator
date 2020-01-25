@@ -8,12 +8,6 @@ def scan_for_drones(gui):
 	All channels from 0 to 125 will be scanned for addresses ranging from 0xE7E7E7E7E0 to 0xE7E7E7E7EF.
 	:param gui: GUI instance to update progress bar and store found drones.
 	"""
-	# Load the drivers
-	cflib.crtp.init_drivers(enable_debug_driver=False)
-
-	# Create list to store found drones
-	found_drones = []
-
 	# Create list of addresses to scan for
 	address_list = []
 	for i in range(0x0, 0x10):
@@ -44,3 +38,6 @@ def scan_for_drones(gui):
 
 	# Final update of progress bar
 	gui.update_progress_scan(1, "Done.")
+
+	# Update connect button
+	gui.update_connect_button()

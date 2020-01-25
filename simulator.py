@@ -18,6 +18,7 @@ from drone_manager import DroneManager
 # Import needed modules
 import sys
 import gi
+import cflib.crtp
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -152,17 +153,24 @@ if __name__ == "__main__":
 	Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	# Connect GUI to program
-	builder.connect_signals(Handler(builder))
+	handler= Handler(builder)
+	builder.connect_signals(handler)
 
 	# Function to call when program is supposed to quit
 	def close_app(*args, **kw):
 		# Gtk.main_quit()  # actually not needed as no main loop is running (gtk_main_iteration_do is used)
+		handler.onStopRotorsPress(None)
+		handler.onDisconnectPress(None)
+
 		sys.exit(0)
 
 	# Main GUI code
 	window = builder.get_object("main")
 	window.connect("destroy", close_app)
 	window.show_all()
+
+	# Load the drivers
+	cflib.crtp.init_drivers(enable_debug_driver=False)
 
 	# Start the simulation
 	app = Simulator()

@@ -32,11 +32,15 @@ class Handler(Gtk.Builder):
 		self.amount_drones_adjustment = builder.get_object("amountDronesAdj")
 		self.takeoff_toggle = builder.get_object("toggleFlightButton")
 		self.stop_movement_button = builder.get_object("stopMovementButton")
+		self.stop_rotors_button = builder.get_object("stopRotorsButton")
 		self.go_home_button = builder.get_object("goHomeButton")
 		self.spiral_button = builder.get_object("spiralButton")
 		self.random_button = builder.get_object("randomButton")
 		self.scanned_drones_store = builder.get_object("scannedDronesStore")
 		self.progress_bar_scan = builder.get_object("progressBarScan")
+		self.connect_button = builder.get_object("connectButton")
+		self.disconnect_button = builder.get_object("disconnectButton")
+		self.connected_label = builder.get_object("connectedLabel")
 
 		# CheckButtons to choose drones
 		self.drone_choosers = []
@@ -70,6 +74,9 @@ class Handler(Gtk.Builder):
 		self.takeoff_toggle_state = self.takeoff_toggle.get_active()  # True == pressed
 		self.amount_drones_value = self.amount_drones_adjustment.get_value()
 
+		# Store if currently connected to drones
+		self.connected = False
+
 	def update_progress_scan(self, fraction, address):
 		"""
 		Set the fraction of the progress bar for scanning for drones.
@@ -78,6 +85,15 @@ class Handler(Gtk.Builder):
 		"""
 		self.progress_bar_scan.set_fraction(fraction)
 		self.progress_bar_scan.set_text(address)
+
+	def update_connect_button(self):
+		"""
+		Turn button on if drones are found and simulation is linked, else not.
+		"""
+		if len(self.scanned_drones_store) > 0 and self.mode_state and not self.connected:
+			self.connect_button.set_sensitive(True)
+		else:
+			self.connect_button.set_sensitive(False)
 
 	def add_to_drone_store(self, drone):
 		"""
@@ -90,14 +106,19 @@ class Handler(Gtk.Builder):
 		"""
 		Switch mode (connection to real drones OR pure simulation) depending on switch.
 		"""
-		# TODO: Actually connect to reality
 		self.mode_state = self.mode_switch.get_active()
 
 		# Change GUI corresponding to state of switch
 		if self.mode_state:
 			self.amount_drones_spinner.set_sensitive(False)
+			self.update_connect_button()
+			Handler.drone_manager.update_drone_amount(0)
+			self.takeoff_toggle.set_sensitive(False)
 		else:
 			self.amount_drones_spinner.set_sensitive(True)
+			self.update_connect_button()
+			Handler.drone_manager.update_drone_amount(self.amount_drones_value)
+			self.takeoff_toggle.set_sensitive(True)
 
 	def onAmountDronesChange(self, adjustment):
 		"""
@@ -133,11 +154,14 @@ class Handler(Gtk.Builder):
 			self.movement_add_y.set_sensitive(True)
 			self.movement_add_z.set_sensitive(True)
 			self.move_button.set_sensitive(True)
+			self.connect_button.set_sensitive(False)
+			self.disconnect_button.set_sensitive(False)
 
 		else:
 			Handler.drone_manager.land()
 			self.takeoff_toggle.set_label("Takeoff")
-			self.mode_switch.set_sensitive(True)
+			if not self.connected:
+				self.mode_switch.set_sensitive(True)
 			if not self.mode_state:
 				self.amount_drones_spinner.set_sensitive(True)
 			self.stop_movement_button.set_sensitive(False)
@@ -156,10 +180,20 @@ class Handler(Gtk.Builder):
 			self.movement_add_y.set_sensitive(False)
 			self.movement_add_z.set_sensitive(False)
 			self.move_button.set_sensitive(False)
+			self.update_connect_button()
+			if self.connected:
+				self.disconnect_button.set_sensitive(True)
 
 	def onStopMovementPress(self, button):
 		Handler.drone_manager.stop_movement()
 		self.stop_rotations.set_sensitive(False)
+
+	def onStopRotorsPress(self, button):
+		# Explicitly send a STOP command to all drones
+		Handler.drone_manager.stop_rotors()
+
+		# Then call to land to reset GUI, stop rotations and set a target on ground
+		self.takeoff_toggle.set_active(False)
 
 	def onStopRotationPress(self, button):
 		Handler.drone_manager.stop_rotation()
@@ -181,6 +215,29 @@ class Handler(Gtk.Builder):
 		# Scan for drones in seperate thread as to not brick the GUI
 		thread = threading.Thread(target=reality_manager.scan_for_drones, args=(self, ))
 		thread.start()
+
+	def onConnectPress(self, button):
+		self.connected = True
+
+		uris = []
+		for drone in self.scanned_drones_store:
+			uris.append(drone[0])
+		self.drone_manager.connect_reality(uris)
+
+		self.connect_button.set_sensitive(False)
+		self.mode_switch.set_sensitive(False)
+		self.disconnect_button.set_sensitive(True)
+		self.takeoff_toggle.set_sensitive(True)
+		self.connected_label.set_text("Currently, there are {} drones connected.".format(len(self.scanned_drones_store)))
+
+	def onDisconnectPress(self, button):
+		self.connected = False
+		self.drone_manager.disconnect_reality()
+		self.connect_button.set_sensitive(True)
+		self.mode_switch.set_sensitive(True)
+		self.disconnect_button.set_sensitive(False)
+		self.takeoff_toggle.set_sensitive(False)
+		self.connected_label.set_text("Currently, there are 0 drones connected.")
 
 	def onAddRotationPress(self, button):
 		"""
@@ -212,7 +269,6 @@ class Handler(Gtk.Builder):
 		z = float(self.movement_add_z.get_text())
 
 		Handler.drone_manager.set_movement(drones, x, y, z)
-
 
 	def onKeyPress(self, area, event):
 		"""
