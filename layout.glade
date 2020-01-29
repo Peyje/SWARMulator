@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
+<!-- Generated with glade 3.20.0 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkAdjustment" id="amountDronesAdj">
@@ -28,9 +28,6 @@
     </accel-groups>
     <signal name="key-press-event" handler="onKeyPress" swapped="no"/>
     <signal name="key-release-event" handler="onKeyRelease" swapped="no"/>
-    <child>
-      <placeholder/>
-    </child>
     <child>
       <object class="GtkGrid">
         <property name="visible">True</property>
@@ -682,7 +679,7 @@
                                     <property name="margin_right">10</property>
                                     <property name="margin_top">5</property>
                                     <property name="margin_bottom">5</property>
-                                    <property name="width_chars">2</property>
+                                    <property name="width_chars">5</property>
                                     <property name="placeholder_text" translatable="yes">°/sec</property>
                                     <property name="input_purpose">number</property>
                                   </object>
@@ -738,7 +735,7 @@
                                         <property name="margin_left">5</property>
                                         <property name="margin_top">10</property>
                                         <property name="margin_bottom">5</property>
-                                        <property name="width_chars">1</property>
+                                        <property name="width_chars">3</property>
                                         <property name="placeholder_text" translatable="yes">X</property>
                                         <property name="input_purpose">number</property>
                                       </object>
@@ -756,7 +753,7 @@
                                         <property name="margin_right">10</property>
                                         <property name="margin_top">10</property>
                                         <property name="margin_bottom">5</property>
-                                        <property name="width_chars">1</property>
+                                        <property name="width_chars">3</property>
                                         <property name="placeholder_text" translatable="yes">Y</property>
                                         <property name="input_purpose">number</property>
                                       </object>
@@ -895,7 +892,7 @@
                                     <property name="margin_right">10</property>
                                     <property name="margin_top">10</property>
                                     <property name="margin_bottom">5</property>
-                                    <property name="width_chars">1</property>
+                                    <property name="width_chars">3</property>
                                     <property name="placeholder_text" translatable="yes">X</property>
                                     <property name="input_purpose">number</property>
                                   </object>
@@ -913,7 +910,7 @@
                                     <property name="margin_right">10</property>
                                     <property name="margin_top">5</property>
                                     <property name="margin_bottom">5</property>
-                                    <property name="width_chars">1</property>
+                                    <property name="width_chars">3</property>
                                     <property name="placeholder_text" translatable="yes">Y</property>
                                     <property name="input_purpose">number</property>
                                   </object>
@@ -931,7 +928,7 @@
                                     <property name="margin_right">10</property>
                                     <property name="margin_top">5</property>
                                     <property name="margin_bottom">5</property>
-                                    <property name="width_chars">2</property>
+                                    <property name="width_chars">3</property>
                                     <property name="placeholder_text" translatable="yes">Z</property>
                                     <property name="input_purpose">number</property>
                                   </object>

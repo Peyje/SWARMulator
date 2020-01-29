@@ -2,6 +2,7 @@
 from panda3d.bullet import BulletSphereShape
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.core import LPoint3f
+from panda3d.core import TextNode
 from panda3d.core import LVector3f
 from panda3d.core import LineSegs
 
@@ -26,7 +27,7 @@ class Drone:
 	LINEAR_DAMPING = 0.95
 	LINEAR_SLEEP_THRESHOLD = 0
 
-	def __init__(self, manager):
+	def __init__(self, manager, number):
 		"""
 		Initialises the drone as a bullet and panda object.
 		:param manager: The drone manager creating this very drone.
@@ -36,6 +37,7 @@ class Drone:
 		self.crazyflie = None  # object of real drone, if connected to one
 		self.debug = False  # If debugging info should be given
 		self.in_flight = False  # If currently in flight
+		self.number = number  # Number of drone in list
 
 		# Every drone has its own vector to follow if an avoidance manouver has to be done
 		self.avoidance_vector = LVector3f(random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)).normalize()
@@ -71,6 +73,9 @@ class Drone:
 		self.line_creator = LineSegs()
 		# Then draw a default line so that the update function works as expected (with the removal)
 		self.target_line_node = self.base.render.attachNewNode(self.line_creator.create(False))
+
+		# Create node for text
+		self.drone_text_node_panda = None
 
 	def get_pos(self) -> LPoint3f:
 		"""
@@ -111,8 +116,11 @@ class Drone:
 		if active:
 			# Create a line so the updater can update it
 			self.target_line_node = self.base.render.attachNewNode(self.line_creator.create(False))
+			# Write address of drone above model
+			self._draw_cf_name(True)
 		else:
 			self.target_line_node.removeNode()
+			self._draw_cf_name(False)
 
 	def update(self):
 		"""
@@ -134,8 +142,8 @@ class Drone:
 		# Update real drone if connected to one
 		if self.crazyflie is not None and self.in_flight:
 			current_pos = self.get_pos()
-			self.crazyflie.cf.commander.send_position_setpoint(current_pos.x, current_pos.y, current_pos.z, 0)
-			print("Update!")
+			self.crazyflie.cf.commander.send_position_setpoint(current_pos.y, -current_pos.x, current_pos.z, 0)
+			# print("Update!")
 
 	def _update_target_force(self):
 		"""
@@ -192,6 +200,8 @@ class Drone:
 		self.drone_node_panda.removeNode()
 		self.base.world.removeRigidBody(self.drone_node_bullet)
 		self.target_line_node.removeNode()
+		if self.debug:
+			self.drone_text_node_panda.removeNode()
 
 	def _draw_target_line(self):
 		"""
@@ -208,3 +218,21 @@ class Drone:
 
 		# And attach it to the renderer
 		self.target_line_node = self.base.render.attachNewNode(line)
+
+	def _draw_cf_name(self, draw):
+		"""
+		Show the address of the connected Craziefly, if there is one, above the model.
+		"""
+		if draw:
+			address = 'Not connected'
+			if self.crazyflie is not None:
+				address = self.crazyflie.cf.link_uri
+
+			text = TextNode('droneInfo')
+			text.setText(str(self.number) + '\n' + address)
+			text.setAlign(TextNode.ACenter)
+			self.drone_text_node_panda = self.base.render.attachNewNode(text)
+			self.drone_text_node_panda.setScale(.1)
+			self.drone_text_node_panda.setPos(self.drone_node_panda, 0, 0, .3)
+		else:
+			self.drone_text_node_panda.removeNode()

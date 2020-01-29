@@ -4,6 +4,7 @@ from direct.gui.DirectButton import DirectButton
 from direct.showbase import DirectObject
 from panda3d.core import Vec3
 
+from handler import Handler
 
 def reset_camera(base):
 	"""
@@ -13,17 +14,20 @@ def reset_camera(base):
 	base.camera.lookAt(0, 0, 1)
 
 
-class CameraControl(DirectObject.DirectObject):
+class CameraControl(DirectObject.DirectObject, Handler):
 	"""
 	This class takes care of the commands to the camera, e.g. event handling, setting up the update task and more.
 	The accept-calls are only working if panda has its own top level window and key presses are propagated to it.
 	"""
 
-	def __init__(self, base):
+	def __init__(self, base, handler):
 		"""
 		Set up trigger, get movement directions and create event handling.
 		"""
 		super().__init__()
+
+		# Save handler instance to update debug mode
+		self.handler = handler
 
 		# Trigger to tell where the camera is supposed to go
 		self.forward_trig = 0
@@ -48,6 +52,7 @@ class CameraControl(DirectObject.DirectObject):
 		self.accept('e', self.set_heading_trig, [-1])
 		self.accept('r', self.set_pitch_trig, [1])
 		self.accept('f', self.set_pitch_trig, [-1])
+		self.accept('f1', self.debug)
 
 		# Event handling for key up events
 		self.accept('w-up', self.set_forward_trig, [0])
@@ -98,6 +103,17 @@ class CameraControl(DirectObject.DirectObject):
 		Event handling function for pitch rotation command.
 		"""
 		self.pitch_trig = trig
+
+	def debug(self):
+		"""
+		Show extra debug info.
+		"""
+		if self.handler.bullet_debug_node.isHidden():
+			self.handler.bullet_debug_node.show()
+			self.handler.drone_manager.set_debug(True)
+		else:
+			self.handler.bullet_debug_node.hide()
+			self.handler.drone_manager.set_debug(False)
 
 	def cam_move_task(self, base, task):
 		"""

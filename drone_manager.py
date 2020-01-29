@@ -91,7 +91,8 @@ class DroneManager(DirectObject.DirectObject):
 				del(self.drones[-1])
 			# Not enough drones? Add some
 			else:
-				self.drones.append(Drone(self))
+				number = len(self.drones)
+				self.drones.append(Drone(self, number))
 
 		# Update their targets to the default formation
 		# As to not reach into the ground: height = size of collision bounds
@@ -180,9 +181,12 @@ class DroneManager(DirectObject.DirectObject):
 			pos = drone.get_pos()
 			drone.set_target(LPoint3f(pos[0], pos[1], 0.1))
 
-		time.sleep(1)
-		for drone in self.drones:
-			drone.in_flight = False
+		def set_flight_false(task):
+			for drone in self.drones:
+				drone.in_flight = False
+			return task.done
+
+		self.base.taskMgr.doMethodLater(3, set_flight_false, "StopFlight")
 
 	def stop_movement(self):
 		"""

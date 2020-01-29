@@ -79,7 +79,7 @@ class Simulator(ShowBase):
 		self.camLens.setFov(90)
 
 		# Load the camera control events to control camera by keyboard
-		self.cam_control = CameraControl(self)
+		self.cam_control = CameraControl(self, handler)
 		# Store it as a class variable of the Handler so the controller can be called by it
 		Handler.cam_control = self.cam_control
 
